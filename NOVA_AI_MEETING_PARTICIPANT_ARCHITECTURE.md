@@ -10,7 +10,7 @@
 
 ## 🎯 Executive Summary
 
-**Alex AI** is a revolutionary voice-powered AI meeting participant that actively contributes to conversations using Amazon Nova 2 Sonic and Nova 2 Lite. Unlike passive note-taking tools, Alex joins meetings as an intelligent participant, responds to questions naturally with human-like speech patterns, and provides real-time insights using speech-to-speech technology.
+**Alex AI** is a revolutionary voice-powered AI meeting participant that actively contributes to conversations using Amazon Nova 2 Sonic and Nova 2 Lite. Unlike passive note-taking tools, Alex joins meetings as an intelligent participant, responds to questions naturally with human-like speech patterns, and provides real-time insights using speech-to-speech technology. Alex AI is a real time organizational decision intelligence agent that participates in meetings to help teams reason, challenge assumptions, and make better decisions.
 
 ### Problem Statement
 Current AI meeting tools (Otter.ai, Fireflies.ai) are passive observers that only transcribe and summarize. They don't:
