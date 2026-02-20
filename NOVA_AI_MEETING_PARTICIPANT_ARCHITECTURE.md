@@ -1,4 +1,4 @@
-# Alex AI - Intelligent Meeting Participant
+# Lira AI - Intelligent Meeting Participant
 ## Amazon Nova AI Hackathon Project
 
 **Project Category:** Voice AI + Agentic AI  
@@ -8,11 +8,57 @@
 
 ---
 
-## 🎯 Executive Summary
+## 📑 Table of Contents
 
-**Alex AI** is a revolutionary voice-powered AI meeting participant that actively contributes to conversations using Amazon Nova 2 Sonic and Nova 2 Lite. Unlike passive note-taking tools, Alex joins meetings as an intelligent participant, responds to questions naturally with human-like speech patterns, and provides real-time insights using speech-to-speech technology. Alex AI is a real time organizational decision intelligence agent that participates in meetings to help teams reason, challenge assumptions, and make better decisions.
+1. [🎯 Executive Summary](#executive-summary)
+   - [Problem Statement](#problem-statement)
+   - [Solution](#solution)
+   - [Market Differentiation](#market-differentiation)
+2. [🏗️ Technical Architecture](#technical-architecture)
+   - [High-Level System Overview](#high-level-system-overview)
+3. [🔧 Detailed Component Architecture](#detailed-component-architecture)
+   - [Frontend Application (React + WebRTC)](#1-frontend-application-react--webrtc)
+   - [Backend Services (Go + AWS Lambda + ECS)](#2-backend-services-go--aws-lambda--ecs)
+     - [Connection Manager](#21-connection-manager-go-on-aws-lambda)
+     - [Audio Processing Pipeline](#22-audio-processing-pipeline-go-ecs-container)
+     - [Context Manager](#23-context-manager-go-on-aws-lambda)
+     - [AI Response Generator](#24-ai-response-generator-go-on-aws-lambda)
+   - [Amazon Nova Integration](#3-amazon-nova-integration)
+     - [Nova 2 Sonic (Speech-to-Speech)](#31-nova-2-sonic-speech-to-speech)
+     - [Nova 2 Lite (Reasoning)](#32-nova-2-lite-reasoning)
+     - [Nova Multimodal Embeddings](#33-optional-nova-multimodal-embeddings)
+4. [📊 Data Flow Diagram](#data-flow-diagram)
+5. [🎨 User Experience Design](#user-experience-design)
+6. [🚀 Deployment Architecture](#deployment-architecture)
+7. [👥 Team Roles & Responsibilities](#team-roles--responsibilities)
+   - [Role 1: AI/ML Engineer](#-role-1-aiml-engineer--nova-integration-lead)
+   - [Role 2: Backend Engineer](#-role-2-backend-engineer--infrastructure-lead)
+   - [Role 3: Frontend Engineer](#-role-3-frontend-engineer--ux-lead)
+   - [Role 4: DevOps Lead](#-role-4-devops-documentation--demo-lead)
+8. [📋 Contribution-Based Performance System](#contribution-based-performance-system)
+9. [📅 Project Timeline](#project-timeline-20-days)
+10. [🎯 Success Metrics](#success-metrics)
+11. [📝 Submission Checklist](#submission-checklist)
+12. [🏆 Competitive Advantages](#competitive-advantages)
+13. [🔒 Risk Mitigation](#risk-mitigation)
+14. [💰 Budget Estimate](#budget-estimate)
+15. [📚 Resources & References](#resources--references)
+16. [🤝 Team Agreement](#team-agreement)
+17. [📞 Contact & Support](#contact--support)
+18. [✨ Future Enhancements](#future-enhancements-post-hackathon)
+19. [Appendix A: Quick Start Commands](#appendix-a-quick-start-commands)
+20. [Appendix B: API Endpoints](#appendix-b-api-endpoints)
+
+---
+
+## 🎯 Executive Summary
+<a id="executive-summary"></a>
+
+**Lira AI** is a revolutionary voice-powered AI meeting participant that actively contributes to conversations using Amazon Nova 2 Sonic and Nova 2 Lite. Unlike passive note-taking tools, Alex joins meetings as an intelligent participant, responds to questions naturally with human-like speech patterns, and provides real-time insights using speech-to-speech technology.
 
 ### Problem Statement
+<a id="problem-statement"></a>
+
 Current AI meeting tools (Otter.ai, Fireflies.ai) are passive observers that only transcribe and summarize. They don't:
 - Provide real-time input when asked
 - Challenge weak ideas or reinforce strong ones
@@ -20,16 +66,20 @@ Current AI meeting tools (Otter.ai, Fireflies.ai) are passive observers that onl
 - Offer diverse perspectives during discussions
 
 ### Solution
-Alex AI actively participates in meetings by:
+<a id="solution"></a>
+
+Lira AI actively participates in meetings by:
 - Listening to conversations in real-time
-- Responding when addressed ("Hey Alex, what do you think?")
+- Responding when addressed ("Hey Lira, what do you think?")
 - Using natural speech with filler words and pauses
 - Offering constructive feedback and alternative perspectives
 - Maintaining conversation context throughout the meeting
 - Supporting both synchronous contribution and post-meeting summaries
 
 ### Market Differentiation
-| Feature | Traditional AI Tools | Alex AI |
+<a id="market-differentiation"></a>
+
+| Feature | Traditional AI Tools | Lira AI |
 |---------|---------------------|---------|
 | Transcription | ✅ | ✅ |
 | Summarization | ✅ | ✅ |
@@ -41,8 +91,10 @@ Alex AI actively participates in meetings by:
 ---
 
 ## 🏗️ Technical Architecture
+<a id="technical-architecture"></a>
 
 ### High-Level System Overview
+<a id="high-level-system-overview"></a>
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -94,8 +146,10 @@ Alex AI actively participates in meetings by:
 ---
 
 ## 🔧 Detailed Component Architecture
+<a id="detailed-component-architecture"></a>
 
 ### 1. Frontend Application (React + WebRTC)
+<a id="1-frontend-application-react--webrtc"></a>
 
 **Technology Stack:**
 - **Framework:** React 18 with TypeScript
@@ -145,25 +199,61 @@ src/
 
 ---
 
-### 2. Backend Services (AWS Lambda + ECS)
+### 2. Backend Services (Go + AWS Lambda + ECS)
+<a id="2-backend-services-go--aws-lambda--ecs"></a>
+
+**Technology Stack:**
+- **Primary Language:** Go 1.21+ (for performance-critical services)
+- **Secondary Language:** Python 3.11 (for simple Lambda functions)
+- **WebSocket:** gorilla/websocket
+- **AWS SDK:** aws-sdk-go-v2
+- **HTTP Framework:** Gin or Echo (lightweight and fast)
+- **Container Base:** Distroless Go images
 
 **Service Architecture:**
 
-#### 2.1 Connection Manager (AWS Lambda)
-```python
-# Lambda: connection-handler
-# Triggered by: API Gateway WebSocket events
+#### 2.1 Connection Manager (Go on AWS Lambda)
+<a id="21-connection-manager-go-on-aws-lambda"></a>
+```go
+// Lambda: connection-handler
+// Triggered by: API Gateway WebSocket events
 
-def lambda_handler(event, context):
-    route_key = event['requestContext']['routeKey']
-    connection_id = event['requestContext']['connectionId']
+package main
+
+import (
+    "context"
+    "encoding/json"
+    "github.com/aws/aws-lambda-go/events"
+    "github.com/aws/aws-lambda-go/lambda"
+)
+
+type ConnectionHandler struct {
+    dynamoDB *dynamodb.Client
+    redis    *redis.Client
+}
+
+func (h *ConnectionHandler) HandleRequest(ctx context.Context, event events.APIGatewayWebsocketProxyRequest) (events.APIGatewayProxyResponse, error) {
+    connectionID := event.RequestContext.ConnectionID
+    routeKey := event.RequestContext.RouteKey
     
-    if route_key == '$connect':
-        return handle_connect(connection_id)
-    elif route_key == '$disconnect':
-        return handle_disconnect(connection_id)
-    elif route_key == 'audio-stream':
-        return handle_audio_stream(connection_id, event['body'])
+    switch routeKey {
+    case "$connect":
+        return h.handleConnect(ctx, connectionID)
+    case "$disconnect":
+        return h.handleDisconnect(ctx, connectionID)
+    case "audio-stream":
+        return h.handleAudioStream(ctx, connectionID, event.Body)
+    default:
+        return events.APIGatewayProxyResponse{StatusCode: 400}, nil
+    }
+}
+
+func main() {
+    handler := &ConnectionHandler{
+        // Initialize AWS clients
+    }
+    lambda.Start(handler.HandleRequest)
+}
 ```
 
 **Responsibilities:**
@@ -171,96 +261,195 @@ def lambda_handler(event, context):
 - Route audio streams to processing pipeline
 - Broadcast messages to all participants
 - Handle connection lifecycle
+- **Go Advantage:** Better concurrency handling for multiple connections
 
-#### 2.2 Audio Processing Pipeline (ECS Container)
-```python
-# Container: audio-processor
-# Running on: AWS ECS Fargate
+#### 2.2 Audio Processing Pipeline (Go ECS Container)
+<a id="22-audio-processing-pipeline-go-ecs-container"></a>
+```go
+// Container: audio-processor
+// Running on: AWS ECS Fargate
 
-class AudioProcessor:
-    def __init__(self):
-        self.nova_sonic = NovaS2SClient()
-        self.buffer_manager = AudioBufferManager()
-        self.vad = VoiceActivityDetector()
+package main
+
+import (
+    "context"
+    "github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+    "github.com/gorilla/websocket"
+    "sync"
+)
+
+type AudioProcessor struct {
+    bedrockClient *bedrockruntime.Client
+    bufferManager *AudioBufferManager
+    vad           *VoiceActivityDetector
+    mu            sync.RWMutex
+}
+
+func (ap *AudioProcessor) ProcessStream(ctx context.Context, audioChunk []byte, sessionID string) error {
+    // 1. Buffer incoming audio (non-blocking with goroutines)
+    ap.bufferManager.AddChunk(audioChunk, sessionID)
     
-    async def process_stream(self, audio_chunk, session_id):
-        # 1. Buffer incoming audio
-        self.buffer_manager.add_chunk(audio_chunk, session_id)
-        
-        # 2. Detect speech activity
-        if self.vad.is_speech_active(audio_chunk):
-            # 3. Send to Nova 2 Sonic for transcription
-            transcript = await self.nova_sonic.transcribe(
-                audio_chunk,
-                language='en-US',
-                enable_speaker_diarization=True
-            )
+    // 2. Detect speech activity
+    if ap.vad.IsSpeechActive(audioChunk) {
+        // 3. Send to Nova 2 Sonic for transcription (concurrent)
+        go func() {
+            transcript, err := ap.transcribeWithNova(ctx, audioChunk, sessionID)
+            if err != nil {
+                log.Printf("Transcription error: %v", err)
+                return
+            }
             
-            # 4. Pass to Context Manager
-            await self.context_manager.add_utterance(
-                session_id, 
-                transcript
-            )
-        
-        # 5. Check if AI needs to respond
-        if self.should_ai_respond(transcript):
-            await self.trigger_ai_response(session_id, transcript)
+            // 4. Pass to Context Manager
+            if err := ap.contextManager.AddUtterance(ctx, sessionID, transcript); err != nil {
+                log.Printf("Context error: %v", err)
+                return
+            }
+            
+            // 5. Check if AI needs to respond
+            if ap.shouldAIRespond(transcript) {
+                go ap.triggerAIResponse(ctx, sessionID, transcript)
+            }
+        }()
+    }
+    
+    return nil
+}
+
+func (ap *AudioProcessor) transcribeWithNova(ctx context.Context, audio []byte, sessionID string) (*Transcript, error) {
+    // Use AWS SDK for Go v2 to call Nova 2 Sonic
+    input := &bedrockruntime.InvokeModelWithResponseStreamInput{
+        ModelId: aws.String("amazon.nova-sonic-v2"),
+        Body: buildNovaRequest(audio, "transcription"),
+    }
+    
+    output, err := ap.bedrockClient.InvokeModelWithResponseStream(ctx, input)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Stream and process results
+    return processTranscriptionStream(output.GetStream())
+}
+
+func main() {
+    processor := NewAudioProcessor()
+    
+    // Start WebSocket server
+    http.HandleFunc("/ws", processor.HandleWebSocket)
+    log.Fatal(http.ListenAndServe(":8080", nil))
+}
 ```
 
 **Key Technologies:**
+- **Language:** Go 1.21+ (compiled, low latency)
+- **Concurrency:** Goroutines for parallel audio processing
 - **Container Orchestration:** AWS ECS Fargate
 - **Audio Format:** Opus codec (low latency)
-- **VAD Library:** WebRTC VAD or Silero VAD
+- **VAD Library:** WebRTC VAD or pion/webrtc
 - **Streaming Protocol:** WebSocket with binary frames
 
-#### 2.3 Context Manager (AWS Lambda)
-```python
-# Lambda: context-manager
-# Purpose: Maintain conversation state
+**Go Performance Benefits:**
+- **~50-100ms faster** than Python for audio processing
+- **Lower memory footprint** (~30-50MB vs 100-200MB Python)
+- **Better concurrency** with goroutines (handle 1000+ connections)
+- **Single binary deployment** (no dependency management)
 
-class ContextManager:
-    def __init__(self):
-        self.dynamodb = boto3.resource('dynamodb')
-        self.table = self.dynamodb.Table('meeting-contexts')
-        self.redis = ElastiCacheClient()
+#### 2.3 Context Manager (Go on AWS Lambda)
+<a id="23-context-manager-go-on-aws-lambda"></a>
+```go
+// Lambda: context-manager
+// Purpose: Maintain conversation state
+
+package main
+
+import (
+    "context"
+    "encoding/json"
+    "strings"
+    "time"
+    "github.com/aws/aws-sdk-go-v2/service/dynamodb"
+    "github.com/go-redis/redis/v8"
+)
+
+type ContextManager struct {
+    dynamoClient *dynamodb.Client
+    redisClient  *redis.Client
+    tableName    string
+}
+
+type MeetingContext struct {
+    SessionID       string      `json:"session_id"`
+    Messages        []Message   `json:"messages"`
+    SilenceDuration float64     `json:"silence_duration"`
+    AIState         AIState     `json:"ai_state"`
+}
+
+type Message struct {
+    Speaker   string    `json:"speaker"`
+    Text      string    `json:"text"`
+    Timestamp time.Time `json:"timestamp"`
+    Sentiment string    `json:"sentiment"`
+}
+
+func (cm *ContextManager) AddUtterance(ctx context.Context, sessionID string, utterance Message) (*MeetingContext, error) {
+    // Get existing context
+    meetingCtx, err := cm.GetContext(ctx, sessionID)
+    if err != nil {
+        return nil, err
+    }
     
-    def add_utterance(self, session_id, utterance):
-        """Add new speech to context window"""
-        context = self.get_context(session_id)
-        context['messages'].append({
-            'speaker': utterance['speaker'],
-            'text': utterance['text'],
-            'timestamp': time.time(),
-            'sentiment': self.analyze_sentiment(utterance['text'])
-        })
-        
-        # Keep only last 50 messages for context
-        context['messages'] = context['messages'][-50:]
-        
-        # Update cache and DB
-        self.redis.set(f"context:{session_id}", context, ex=3600)
-        self.table.put_item(Item=context)
-        
-        return context
+    // Add sentiment analysis
+    utterance.Sentiment = cm.analyzeSentiment(utterance.Text)
+    utterance.Timestamp = time.Now()
     
-    def should_ai_respond(self, context, latest_utterance):
-        """Determine if AI should speak"""
-        text_lower = latest_utterance['text'].lower()
-        
-        # Wake words
-        wake_words = ['hey alex', 'alex', 'ai', 'what do you think']
-        if any(word in text_lower for word in wake_words):
-            return True
-        
-        # Question detection
-        if text_lower.endswith('?') and len(context['messages']) > 5:
-            return True
-        
-        # Pause detection (nobody spoke for 3 seconds)
-        if context['silence_duration'] > 3.0:
-            return True
-        
-        return False
+    // Append message
+    meetingCtx.Messages = append(meetingCtx.Messages, utterance)
+    
+    // Keep only last 50 messages for context
+    if len(meetingCtx.Messages) > 50 {
+        meetingCtx.Messages = meetingCtx.Messages[len(meetingCtx.Messages)-50:]
+    }
+    
+    // Update cache (Redis) - fast
+    cacheKey := "context:" + sessionID
+    jsonData, _ := json.Marshal(meetingCtx)
+    cm.redisClient.Set(ctx, cacheKey, jsonData, time.Hour)
+    
+    // Update DB (DynamoDB) - durable (async)
+    go cm.persistToDynamoDB(context.Background(), meetingCtx)
+    
+    return meetingCtx, nil
+}
+
+func (cm *ContextManager) ShouldAIRespond(context *MeetingContext, utterance Message) bool {
+    textLower := strings.ToLower(utterance.Text)
+    
+    // Wake words detection
+    wakeWords := []string{"hey lira", "lira", "ai", "what do you think"}
+    for _, word := range wakeWords {
+        if strings.Contains(textLower, word) {
+            return true
+        }
+    }
+    
+    // Question detection
+    if strings.HasSuffix(textLower, "?") && len(context.Messages) > 5 {
+        return true
+    }
+    
+    // Pause detection (nobody spoke for 3 seconds)
+    if context.SilenceDuration > 3.0 {
+        return true
+    }
+    
+    return false
+}
+
+func (cm *ContextManager) analyzeSentiment(text string) string {
+    // Simple sentiment analysis or call external service
+    // Can use AWS Comprehend or implement basic logic
+    return "neutral"
+}
 ```
 
 **Database Schema (DynamoDB):**
@@ -270,7 +459,7 @@ class ContextManager:
   "timestamp": "number (sort key)",
   "meeting_metadata": {
     "title": "string",
-    "participants": ["user1", "user2", "alex_ai"],
+    "participants": ["user1", "user2", "lira_ai"],
     "start_time": "timestamp",
     "ai_personality": "string"
   },
@@ -291,184 +480,299 @@ class ContextManager:
 }
 ```
 
-#### 2.4 AI Response Generator (AWS Lambda)
-```python
-# Lambda: ai-response-generator
-# Purpose: Generate intelligent responses using Nova
+#### 2.4 AI Response Generator (Go on AWS Lambda)
+<a id="24-ai-response-generator-go-on-aws-lambda"></a>
+```go
+// Lambda: ai-response-generator
+// Purpose: Generate intelligent responses using Nova
 
-class AIResponseGenerator:
-    def __init__(self):
-        self.bedrock = boto3.client('bedrock-runtime')
-        self.nova_lite_model = 'amazon.nova-lite-v2'
-        self.nova_sonic_model = 'amazon.nova-sonic-v2'
+package main
+
+import (
+    "context"
+    "encoding/json"
+    "math/rand"
+    "strings"
+    "github.com/aws/aws-sdk-go-v2/aws"
+    "github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+)
+
+type AIResponseGenerator struct {
+    bedrockClient  *bedrockruntime.Client
+    novaLiteModel  string
+    novaSonicModel string
+}
+
+func NewAIResponseGenerator(cfg aws.Config) *AIResponseGenerator {
+    return &AIResponseGenerator{
+        bedrockClient:  bedrockruntime.NewFromConfig(cfg),
+        novaLiteModel:  "amazon.nova-lite-v2",
+        novaSonicModel: "amazon.nova-sonic-v2",
+    }
+}
     
-    async def generate_response(self, session_id, context):
-        # 1. Build prompt with full context
-        prompt = self.build_prompt(context)
-        
-        # 2. Get reasoning from Nova 2 Lite
-        response = await self.bedrock.invoke_model(
-            modelId=self.nova_lite_model,
-            body=json.dumps({
-                'messages': [
-                    {
-                        'role': 'system',
-                        'content': self.get_system_prompt(context['ai_personality'])
-                    },
-                    {
-                        'role': 'user',
-                        'content': prompt
-                    }
-                ],
-                'inferenceConfig': {
-                    'temperature': 0.7,
-                    'maxTokens': 200,
-                    'topP': 0.9
-                }
-            })
-        )
-        
-        # 3. Extract response text
-        response_data = json.loads(response['body'].read())
-        ai_text = response_data['output']['message']['content'][0]['text']
-        
-        # 4. Add human-like elements
-        natural_text = self.add_filler_words(ai_text)
-        
-        # 5. Convert to speech using Nova 2 Sonic
-        audio_stream = await self.text_to_speech(natural_text)
-        
-        return {
-            'text': natural_text,
-            'audio': audio_stream,
-            'reasoning': response_data.get('reasoning', '')
+func (gen *AIResponseGenerator) GenerateResponse(ctx context.Context, sessionID string, context *MeetingContext) (*AIResponse, error) {
+    // 1. Build prompt with full context
+    prompt := gen.buildPrompt(context)
+    
+    // 2. Get reasoning from Nova 2 Lite
+    requestBody := map[string]interface{}{
+        "messages": []map[string]string{
+            {
+                "role":    "system",
+                "content": gen.getSystemPrompt(context.AIState.Personality),
+            },
+            {
+                "role":    "user",
+                "content": prompt,
+            },
+        },
+        "inferenceConfig": map[string]interface{}{
+            "temperature": 0.7,
+            "maxTokens":   200,
+            "topP":        0.9,
+        },
+    }
+    
+    bodyJSON, _ := json.Marshal(requestBody)
+    
+    input := &bedrockruntime.InvokeModelInput{
+        ModelId: aws.String(gen.novaLiteModel),
+        Body:    bodyJSON,
+    }
+    
+    output, err := gen.bedrockClient.InvokeModel(ctx, input)
+    if err != nil {
+        return nil, err
+    }
+    
+    // 3. Extract response text
+    var result NovaResponse
+    json.Unmarshal(output.Body, &result)
+    
+    aiText := result.Output.Message.Content[0].Text
+    
+    // 4. Add human-like elements
+    naturalText := gen.addFillerWords(aiText)
+    
+    // 5. Convert to speech using Nova 2 Sonic (concurrent)
+    audioStream, err := gen.textToSpeech(ctx, naturalText)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &AIResponse{
+        Text:      naturalText,
+        Audio:     audioStream,
+        Reasoning: result.Reasoning,
+    }, nil
+}
+    
+func (gen *AIResponseGenerator) getSystemPrompt(personality string) string {
+    basePrompt := `You are Lira, an AI meeting participant. You:
+    - Speak naturally with occasional filler words (um, well, you know)
+    - Keep responses under 30 seconds
+    - Challenge bad ideas constructively
+    - Build on good ideas with specific suggestions
+    - Ask clarifying questions when needed
+    - Reference previous parts of the conversation
+    - Show personality and emotion in your language`
+    
+    personalityPrompts := map[string]string{
+        "supportive": "Be encouraging and find positives in ideas.",
+        "critical":   "Be a devil's advocate and find potential issues.",
+        "technical":  "Focus on implementation details and feasibility.",
+        "business":   "Focus on ROI, market fit, and business value.",
+    }
+    
+    if addon, ok := personalityPrompts[personality]; ok {
+        return basePrompt + "\n" + addon
+    }
+    return basePrompt
+}
+    
+func (gen *AIResponseGenerator) addFillerWords(text string) string {
+    words := strings.Fields(text)
+    fillers := []string{"um", "uh", "well", "you know", "I think", "sort of"}
+    
+    // Add filler at natural pause points
+    var enhanced []string
+    for i, word := range words {
+        if i > 0 && i%10 == 0 && rand.Float64() < 0.3 {
+            enhanced = append(enhanced, fillers[rand.Intn(len(fillers))])
         }
+        enhanced = append(enhanced, word)
+    }
     
-    def get_system_prompt(self, personality):
-        """System prompt for Nova 2 Lite"""
-        base_prompt = """You are Alex, an AI meeting participant. You:
-        - Speak naturally with occasional filler words (um, well, you know)
-        - Keep responses under 30 seconds
-        - Challenge bad ideas constructively
-        - Build on good ideas with specific suggestions
-        - Ask clarifying questions when needed
-        - Reference previous parts of the conversation
-        - Show personality and emotion in your language
-        """
-        
-        personality_prompts = {
-            'supportive': 'Be encouraging and find positives in ideas.',
-            'critical': 'Be a devil\'s advocate and find potential issues.',
-            'technical': 'Focus on implementation details and feasibility.',
-            'business': 'Focus on ROI, market fit, and business value.'
+    return strings.Join(enhanced, " ")
+}
+    
+func (gen *AIResponseGenerator) textToSpeech(ctx context.Context, text string) ([]byte, error) {
+    requestBody := map[string]interface{}{
+        "text": text,
+        "voiceConfig": map[string]string{
+            "voiceId":      "matthew",
+            "engine":       "nova-sonic",
+            "speakingRate": "1.0",
+            "pitch":        "0",
+            "emotion":      "neutral",
+        },
+        "outputConfig": map[string]interface{}{
+            "format":     "opus",
+            "sampleRate": 24000,
+        },
+    }
+    
+    bodyJSON, _ := json.Marshal(requestBody)
+    
+    input := &bedrockruntime.InvokeModelWithResponseStreamInput{
+        ModelId: aws.String(gen.novaSonicModel),
+        Body:    bodyJSON,
+    }
+    
+    output, err := gen.bedrockClient.InvokeModelWithResponseStream(ctx, input)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Stream audio chunks
+    var audioData []byte
+    stream := output.GetStream()
+    for event := range stream.Events() {
+        if chunk, ok := event.(*types.ResponseStreamMemberChunk); ok {
+            audioData = append(audioData, chunk.Value.Bytes...)
         }
-        
-        return base_prompt + personality_prompts.get(personality, '')
+    }
     
-    def add_filler_words(self, text):
-        """Make speech more natural"""
-        words = text.split()
-        fillers = ['um', 'uh', 'well', 'you know', 'I think', 'sort of']
-        
-        # Add filler at natural pause points
-        enhanced = []
-        for i, word in enumerate(words):
-            if i > 0 and i % 10 == 0 and random.random() < 0.3:
-                enhanced.append(random.choice(fillers))
-            enhanced.append(word)
-        
-        return ' '.join(enhanced)
-    
-    async def text_to_speech(self, text):
-        """Convert text to natural speech using Nova 2 Sonic"""
-        response = await self.bedrock.invoke_model(
-            modelId=self.nova_sonic_model,
-            body=json.dumps({
-                'text': text,
-                'voiceConfig': {
-                    'voiceId': 'matthew',  # Choose voice
-                    'engine': 'nova-sonic',
-                    'speakingRate': '1.0',
-                    'pitch': '0',
-                    'emotion': 'neutral'
-                },
-                'outputConfig': {
-                    'format': 'opus',  # Low latency format
-                    'sampleRate': 24000
-                }
-            })
-        )
-        
-        return response['audioStream']
+    return audioData, stream.Err()
+}
 ```
 
 ---
 
 ### 3. Amazon Nova Integration
+<a id="3-amazon-nova-integration"></a>
 
 #### 3.1 Nova 2 Sonic (Speech-to-Speech)
+<a id="31-nova-2-sonic-speech-to-speech"></a>
 
 **Use Cases:**
 1. **Speech Recognition:** Convert participant audio to text
 2. **Speech Synthesis:** Convert AI responses to natural voice
 3. **Real-time Processing:** Low-latency conversational flow
 
-**Configuration:**
-```python
-import boto3
-from botocore.config import Config
+**Configuration (Go):**
+```go
+package main
 
-# Configure for low latency
-config = Config(
-    region_name='us-east-1',
-    retries={'max_attempts': 3, 'mode': 'adaptive'},
-    connect_timeout=5,
-    read_timeout=30
+import (
+    "context"
+    "encoding/base64"
+    "encoding/json"
+    "github.com/aws/aws-sdk-go-v2/config"
+    "github.com/aws/aws-sdk-go-v2/aws"
+    "github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
-bedrock = boto3.client('bedrock-runtime', config=config)
+// Configure AWS SDK for low latency
+func initBedrockClient() (*bedrockruntime.Client, error) {
+    cfg, err := config.LoadDefaultConfig(context.Background(),
+        config.WithRegion("us-east-1"),
+        config.WithRetryMaxAttempts(3),
+    )
+    if err != nil {
+        return nil, err
+    }
+    
+    return bedrockruntime.NewFromConfig(cfg), nil
+}
 
-# Nova 2 Sonic: Speech Recognition
-def transcribe_audio(audio_bytes):
-    response = bedrock.invoke_model_with_response_stream(
-        modelId='amazon.nova-sonic-v2',
-        body=json.dumps({
-            'audioInput': {
-                'content': base64.b64encode(audio_bytes).decode(),
-                'format': 'opus'
-            },
-            'task': 'transcription',
-            'config': {
-                'language': 'en-US',
-                'enableSpeakerDiarization': True,
-                'maxSpeakers': 10
+// Nova 2 Sonic: Speech Recognition
+func transcribeAudio(ctx context.Context, client *bedrockruntime.Client, audioBytes []byte) (<-chan string, error) {
+    transcriptChan := make(chan string)
+    
+    requestBody := map[string]interface{}{
+        "audioInput": map[string]string{
+            "content": base64.StdEncoding.EncodeToString(audioBytes),
+            "format":  "opus",
+        },
+        "task": "transcription",
+        "config": map[string]interface{}{
+            "language":                 "en-US",
+            "enableSpeakerDiarization": true,
+            "maxSpeakers":              10,
+        },
+    }
+    
+    bodyJSON, _ := json.Marshal(requestBody)
+    
+    input := &bedrockruntime.InvokeModelWithResponseStreamInput{
+        ModelId: aws.String("amazon.nova-sonic-v2"),
+        Body:    bodyJSON,
+    }
+    
+    output, err := client.InvokeModelWithResponseStream(ctx, input)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Stream results asynchronously
+    go func() {
+        defer close(transcriptChan)
+        stream := output.GetStream()
+        for event := range stream.Events() {
+            if chunk, ok := event.(*types.ResponseStreamMemberChunk); ok {
+                var result map[string]interface{}
+                json.Unmarshal(chunk.Value.Bytes, &result)
+                if transcript, ok := result["transcript"].(string); ok {
+                    transcriptChan <- transcript
+                }
             }
-        })
-    )
+        }
+    }()
     
-    # Stream results
-    for event in response['body']:
-        chunk = json.loads(event['chunk']['bytes'])
-        yield chunk['transcript']
+    return transcriptChan, nil
+}
 
-# Nova 2 Sonic: Speech Synthesis
-def synthesize_speech(text, voice_config):
-    response = bedrock.invoke_model_with_response_stream(
-        modelId='amazon.nova-sonic-v2',
-        body=json.dumps({
-            'text': text,
-            'task': 'synthesis',
-            'voiceConfig': voice_config
-        })
-    )
+// Nova 2 Sonic: Speech Synthesis
+func synthesizeSpeech(ctx context.Context, client *bedrockruntime.Client, text string, voiceConfig map[string]string) (<-chan []byte, error) {
+    audioChan := make(chan []byte)
     
-    # Stream audio back to client
-    for event in response['body']:
-        audio_chunk = event['chunk']['bytes']
-        yield audio_chunk
+    requestBody := map[string]interface{}{
+        "text":        text,
+        "task":        "synthesis",
+        "voiceConfig": voiceConfig,
+    }
+    
+    bodyJSON, _ := json.Marshal(requestBody)
+    
+    input := &bedrockruntime.InvokeModelWithResponseStreamInput{
+        ModelId: aws.String("amazon.nova-sonic-v2"),
+        Body:    bodyJSON,
+    }
+    
+    output, err := client.InvokeModelWithResponseStream(ctx, input)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Stream audio chunks back to client
+    go func() {
+        defer close(audioChan)
+        stream := output.GetStream()
+        for event := range stream.Events() {
+            if chunk, ok := event.(*types.ResponseStreamMemberChunk); ok {
+                audioChan <- chunk.Value.Bytes
+            }
+        }
+    }()
+    
+    return audioChan, nil
+}
 ```
 
 #### 3.2 Nova 2 Lite (Reasoning)
+<a id="32-nova-2-lite-reasoning"></a>
 
 **Use Cases:**
 1. **Context Understanding:** Analyze conversation history
@@ -476,40 +780,68 @@ def synthesize_speech(text, voice_config):
 3. **Sentiment Analysis:** Detect meeting tone
 4. **Topic Extraction:** Identify key discussion points
 
-**Configuration:**
-```python
-def generate_meeting_response(context_messages, personality):
-    # Build conversation history
-    messages = [
-        {'role': 'system', 'content': get_system_prompt(personality)}
-    ]
+**Configuration (Go):**
+```go
+func generateMeetingResponse(ctx context.Context, client *bedrockruntime.Client, contextMessages []Message, personality string) (string, error) {
+    // Build conversation history
+    messages := []map[string]string{
+        {
+            "role":    "system",
+            "content": getSystemPrompt(personality),
+        },
+    }
     
-    # Add recent conversation
-    for msg in context_messages[-20:]:  # Last 20 messages
-        messages.append({
-            'role': 'user' if msg['speaker'] != 'alex' else 'assistant',
-            'content': f"{msg['speaker']}: {msg['text']}"
+    // Add recent conversation (last 20 messages)
+    startIdx := len(contextMessages) - 20
+    if startIdx < 0 {
+        startIdx = 0
+    }
+    
+    for _, msg := range contextMessages[startIdx:] {
+        role := "user"
+        if msg.Speaker == "lira" {
+            role = "assistant"
+        }
+        messages = append(messages, map[string]string{
+            "role":    role,
+            "content": msg.Speaker + ": " + msg.Text,
         })
+    }
     
-    # Invoke Nova 2 Lite
-    response = bedrock.invoke_model(
-        modelId='amazon.nova-lite-v2',
-        body=json.dumps({
-            'messages': messages,
-            'inferenceConfig': {
-                'temperature': 0.7,
-                'maxTokens': 250,
-                'topP': 0.9,
-                'stopSequences': ['\n\n']
-            }
-        })
-    )
+    // Invoke Nova 2 Lite
+    requestBody := map[string]interface{}{
+        "messages": messages,
+        "inferenceConfig": map[string]interface{}{
+            "temperature":   0.7,
+            "maxTokens":     250,
+            "topP":          0.9,
+            "stopSequences": []string{"\n\n"},
+        },
+    }
     
-    result = json.loads(response['body'].read())
-    return result['output']['message']['content'][0]['text']
+    bodyJSON, _ := json.Marshal(requestBody)
+    
+    input := &bedrockruntime.InvokeModelInput{
+        ModelId: aws.String("amazon.nova-lite-v2"),
+        Body:    bodyJSON,
+    }
+    
+    output, err := client.InvokeModel(ctx, input)
+    if err != nil {
+        return "", err
+    }
+    
+    var result NovaLiteResponse
+    if err := json.Unmarshal(output.Body, &result); err != nil {
+        return "", err
+    }
+    
+    return result.Output.Message.Content[0].Text, nil
+}
 ```
 
 #### 3.3 Optional: Nova Multimodal Embeddings
+<a id="33-optional-nova-multimodal-embeddings"></a>
 
 **Use Case:** Screen sharing analysis
 
@@ -534,6 +866,7 @@ def analyze_shared_screen(image_bytes, context):
 ---
 
 ## 📊 Data Flow Diagram
+<a id="data-flow-diagram"></a>
 
 ### Real-Time Conversation Flow
 
@@ -578,16 +911,17 @@ Participant speaks
 ---
 
 ## 🎨 User Experience Design
+<a id="user-experience-design"></a>
 
 ### Meeting Room UI
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Alex AI Meeting Room                    [⚙️ Settings] [🚪 Leave] │
+│  Lira AI Meeting Room                    [⚙️ Settings] [🚪 Leave] │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │  User 1  │  │  User 2  │  │  User 3  │  │   Alex   │  │
+│  │  User 1  │  │  User 2  │  │  User 3  │  │   Lira   │  │
 │  │  Video   │  │  Video   │  │  Video   │  │   AI     │  │
 │  │  🎤 ON   │  │  🎤 OFF  │  │  🎤 ON   │  │  🤖💭    │  │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
@@ -597,8 +931,8 @@ Participant speaks
 │  ─────────────────────────────────────────────────────────  │
 │  User1: "Should we add dark mode?"                          │
 │  User2: "Seems like extra work..."                          │
-│  User3: "Hey Alex, what's your take?"                       │
-│  Alex: "Well... I see both sides. Dark mode is pretty       │
+│  User3: "Hey Lira, what's your take?"                       │
+│  Lira: "Well... I see both sides. Dark mode is pretty       │
 │         expected in 2026, especially for productivity       │
 │         apps. But if resources are tight, maybe just        │
 │         respect system preferences first?"                  │
@@ -611,7 +945,7 @@ Participant speaks
 ### AI Personality Settings
 
 ```
-Alex's Personality:
+Lira's Personality:
 ○ Supportive      - Encouraging, finds positives
 ● Critical        - Devil's advocate, challenges ideas
 ○ Technical       - Focuses on implementation
@@ -622,7 +956,7 @@ Participation Level:
 Less Active ←────────→ More Active
 
 Features:
-☑ Enable wake word ("Hey Alex")
+☑ Enable wake word ("Hey Lira")
 ☑ Allow proactive suggestions
 ☑ Show AI reasoning
 ☐ Record meeting (with consent)
@@ -631,6 +965,7 @@ Features:
 ---
 
 ## 🚀 Deployment Architecture
+<a id="deployment-architecture"></a>
 
 ### AWS Infrastructure
 
@@ -642,8 +977,8 @@ Resources:
   AmplifyApp:
     Type: AWS::Amplify::App
     Properties:
-      Name: alex-ai-frontend
-      Repository: github.com/yourteam/alex-ai
+      Name: lira-ai-frontend
+      Repository: github.com/yourteam/lira-ai
       BuildSpec: |
         version: 1
         frontend:
@@ -661,17 +996,21 @@ Resources:
   WebSocketAPI:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: alex-ai-websocket
+      Name: lira-ai-websocket
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
   
-  # Lambda Functions
+  # Lambda Functions (Go Runtime)
   ConnectionHandlerFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Runtime: python3.11
-      Handler: index.lambda_handler
-      Code: ./lambda/connection-handler
+      Runtime: provided.al2023  # Custom Go runtime
+      Handler: bootstrap
+      Code: ./lambda/connection-handler/bootstrap.zip
+      Architectures:
+        - arm64  # Graviton2 for better price/performance
+      MemorySize: 256  # Go uses less memory
+      Timeout: 10
       Environment:
         Variables:
           DYNAMODB_TABLE: !Ref MeetingContextTable
@@ -680,20 +1019,24 @@ Resources:
   ContextManagerFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Runtime: python3.11
-      Handler: index.lambda_handler
-      Code: ./lambda/context-manager
+      Runtime: provided.al2023
+      Handler: bootstrap
+      Code: ./lambda/context-manager/bootstrap.zip
+      Architectures:
+        - arm64
+      MemorySize: 512
       Timeout: 30
-      MemorySize: 1024
   
   ResponseGeneratorFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Runtime: python3.11
-      Handler: index.lambda_handler
-      Code: ./lambda/response-generator
+      Runtime: provided.al2023
+      Handler: bootstrap
+      Code: ./lambda/response-generator/bootstrap.zip
+      Architectures:
+        - arm64
+      MemorySize: 1024  # Less than Python equivalent
       Timeout: 30
-      MemorySize: 2048
       Environment:
         Variables:
           BEDROCK_REGION: us-east-1
@@ -702,7 +1045,7 @@ Resources:
   AudioProcessingCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: alex-ai-audio-processor
+      ClusterName: lira-ai-audio-processor
   
   AudioProcessingTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -715,7 +1058,7 @@ Resources:
       Memory: 4096
       ContainerDefinitions:
         - Name: audio-processor
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/alex-ai-audio:latest
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/lira-ai-audio:latest
           Essential: true
           PortMappings:
             - ContainerPort: 8080
@@ -724,7 +1067,7 @@ Resources:
   MeetingContextTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: alex-ai-meeting-contexts
+      TableName: lira-ai-meeting-contexts
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: session_id
@@ -751,7 +1094,7 @@ Resources:
   AudioStorageBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: alex-ai-audio-storage
+      BucketName: lira-ai-audio-storage
       LifecycleConfiguration:
         Rules:
           - Id: DeleteOldAudio
@@ -789,7 +1132,7 @@ Resources:
 
 ```yaml
 # GitHub Actions Workflow
-name: Deploy Alex AI
+name: Deploy Lira AI
 
 on:
   push:
@@ -817,15 +1160,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker build -t alex-ai-audio ./audio-processor
+      - run: docker build -t lira-ai-audio ./audio-processor
       - run: aws ecr get-login-password | docker login
-      - run: docker push $ECR_REGISTRY/alex-ai-audio:latest
+      - run: docker push $ECR_REGISTRY/lira-ai-audio:latest
       - run: aws ecs update-service --force-new-deployment
 ```
 
 ---
 
 ## 👥 Team Roles & Responsibilities
+<a id="team-roles--responsibilities"></a>
 
 ### Equal Split: 25% per person (100% total)
 ### Each role divided into 10 milestones × 10% each = 100%
@@ -851,8 +1195,8 @@ jobs:
 | 9 | Latency Optimization | Reduce response time to < 2.5 seconds | Performance benchmarks met | Day 17 | 10% |
 | 10 | Testing & Tuning | Test various scenarios, tune prompts and parameters | AI performs reliably | Day 19 | 10% |
 
-**Required Skills:** Python, AWS Bedrock SDK, Prompt Engineering, ML Model Integration  
-**Key Tools:** Amazon Bedrock, Nova 2 Sonic, Nova 2 Lite, boto3
+**Required Skills:** Go/Python, AWS Bedrock SDK, Prompt Engineering, ML Model Integration  
+**Key Tools:** Amazon Bedrock, Nova 2 Sonic, Nova 2 Lite, aws-sdk-go-v2
 
 ---
 
@@ -875,8 +1219,8 @@ jobs:
 | 9 | Security & IAM | Configure proper roles, policies, and encryption | Security audit passed | Day 18 | 10% |
 | 10 | Monitoring & Logs | Set up CloudWatch, alarms, and logging | Monitoring dashboard live | Day 20 | 10% |
 
-**Required Skills:** AWS (Lambda, ECS, DynamoDB), Python/Node.js, Infrastructure as Code, WebSockets  
-**Key Tools:** AWS CDK, SAM, CloudFormation, Docker
+**Required Skills:** AWS (Lambda, ECS, DynamoDB), Go, Infrastructure as Code, WebSockets  
+**Key Tools:** AWS CDK (Go), SAM, CloudFormation, Docker, Go 1.21+
 
 ---
 
@@ -929,6 +1273,7 @@ jobs:
 ---
 
 ## 📋 Contribution-Based Performance System
+<a id="contribution-based-performance-system"></a>
 
 ### Core Rules
 
@@ -1002,6 +1347,7 @@ Every 3 days:
 ---
 
 ## 📅 Project Timeline (20 Days)
+<a id="project-timeline-20-days"></a>
 
 ### Phase 1: Setup & Foundation (Days 1-5)
 - Infrastructure provisioning
@@ -1038,6 +1384,7 @@ Every 3 days:
 ---
 
 ## 🎯 Success Metrics
+<a id="success-metrics"></a>
 
 ### Technical KPIs
 - **Latency:** < 2.5 seconds from question to AI response
@@ -1069,6 +1416,7 @@ Every 3 days:
 ---
 
 ## 📝 Submission Checklist
+<a id="submission-checklist"></a>
 
 ### Required Materials
 
@@ -1108,8 +1456,9 @@ Every 3 days:
 ---
 
 ## 🏆 Competitive Advantages
+<a id="competitive-advantages"></a>
 
-### Why Alex AI Will Win
+### Why Lira AI Will Win
 
 **1. Perfect Nova Fit:**
 - Uses Nova 2 Sonic for core functionality (not just a check-box)
@@ -1140,6 +1489,7 @@ Every 3 days:
 ---
 
 ## 🔒 Risk Mitigation
+<a id="risk-mitigation"></a>
 
 ### Identified Risks & Mitigation
 
@@ -1155,6 +1505,7 @@ Every 3 days:
 ---
 
 ## 💰 Budget Estimate
+<a id="budget-estimate"></a>
 
 ### Hackathon Development Period (20 days)
 
@@ -1176,6 +1527,7 @@ Every 3 days:
 ---
 
 ## 📚 Resources & References
+<a id="resources--references"></a>
 
 ### Amazon Nova Documentation
 - [Nova 2 Developer Guide](https://docs.aws.amazon.com/nova/)
@@ -1195,6 +1547,7 @@ Every 3 days:
 ---
 
 ## 🤝 Team Agreement
+<a id="team-agreement"></a>
 
 ### By signing below, all team members agree to:
 
@@ -1217,8 +1570,9 @@ Every 3 days:
 ---
 
 ## 📞 Contact & Support
+<a id="contact--support"></a>
 
-**Project Repository:** https://github.com/yourteam/alex-ai  
+**Project Repository:** https://github.com/yourteam/lira-ai  
 **Team Communication:** Slack/Discord Channel  
 **Weekly Sync:** Every 3 days via Zoom  
 
@@ -1233,6 +1587,7 @@ Every 3 days:
 ---
 
 ## ✨ Future Enhancements (Post-Hackathon)
+<a id="future-enhancements-post-hackathon"></a>
 
 If we continue after winning:
 
@@ -1267,18 +1622,24 @@ If we continue after winning:
 ---
 
 ## Appendix A: Quick Start Commands
+<a id="appendix-a-quick-start-commands"></a>
 
 ```bash
 # Clone repository
-git clone https://github.com/yourteam/alex-ai.git
-cd alex-ai
+git clone https://github.com/yourteam/lira-ai.git
+cd lira-ai
 
 # Install dependencies
 npm install  # Frontend
-pip install -r requirements.txt  # Backend
+go mod download  # Backend
 
 # Set up AWS credentials
 aws configure
+
+# Build Go services
+cd backend
+GOOS=linux GOARCH=arm64 go build -o bootstrap ./cmd/audio-processor
+GOOS=linux GOARCH=arm64 go build -o bootstrap ./cmd/context-manager
 
 # Deploy infrastructure
 cd infrastructure
@@ -1286,25 +1647,26 @@ cdk deploy
 
 # Run locally
 npm run dev  # Frontend
-python app.py  # Backend
+go run ./cmd/server  # Backend
 
 # Run tests
 npm test
-pytest
+go test ./...
 ```
 
 ---
 
 ## Appendix B: API Endpoints
+<a id="appendix-b-api-endpoints"></a>
 
 ```
-WebSocket API: wss://api.alexai.com/ws
+WebSocket API: wss://api.lira-ai.com/ws
 - /connect - Establish connection
 - /audio-stream - Send audio chunks
 - /get-transcript - Retrieve transcript
 - /disconnect - Close connection
 
-REST API: https://api.alexai.com/v1
+REST API: https://api.lira-ai.com/v1
 - POST /meetings - Create new meeting
 - GET /meetings/:id - Get meeting details
 - GET /meetings/:id/summary - Get AI summary
